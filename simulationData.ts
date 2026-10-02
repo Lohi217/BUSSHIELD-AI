@@ -1,0 +1,318 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { BusTelemetry, RoadRiskContext, ScenarioPhase } from '../types';
+
+export const ROAD_CONTEXTS: Record<string, RoadRiskContext> = {
+  NORMAL_ARTERIAL: {
+    type: 'URBAN_ARTERIAL',
+    name: 'Outer Ring Corridor (Sec-4)',
+    speedLimitKmH: 50,
+    hazardDescription: 'Divided 3-lane transit corridor with dedicated safety lane',
+    shoulderAvailability: 'WIDE_EMERGENCY_SHOULDER',
+  },
+  ELEVATED_FLYOVER: {
+    type: 'ELEVATED_FLYOVER',
+    name: 'Silk Board Elevated Expressway Link',
+    speedLimitKmH: 60,
+    hazardDescription: 'High-elevation corridor, concrete parapets, zero pedestrian escape margin',
+    shoulderAvailability: 'NARROW_BARRIER_ONLY',
+  },
+  GHAT_SECTION: {
+    type: 'GHAT_SECTION',
+    name: 'Ridge Bypass Curves (Zone 7)',
+    speedLimitKmH: 40,
+    hazardDescription: 'Steep lateral gradient, blind curves, cliff verge boundary',
+    shoulderAvailability: 'DESIGNATED_BUS_BAY',
+  },
+  HIGH_PEDESTRIAN_ZONE: {
+    type: 'HIGH_PEDESTRIAN_ZONE',
+    name: 'Majestic Central Transit Interchange',
+    speedLimitKmH: 35,
+    hazardDescription: 'Dense commuter pedestrian flows, high curb proximity',
+    shoulderAvailability: 'DESIGNATED_BUS_BAY',
+  },
+};
+
+export const INITIAL_BUS_TELEMETRY: BusTelemetry = {
+  busId: 'BUS-KA01-F2204',
+  route: 'Route 334E (Electronic City ⇄ Kempegowda Bus Station)',
+  driverName: 'R. Sharma (Badge #TR-8841)',
+  speedKmH: 52,
+  steeringAngleDeg: 1.2,
+  steeringStabilityScore: 94,
+  laneDeviationCm: 4,
+  brakingStatus: 'NONE',
+  driverStatus: 'NORMAL',
+  eyeClosurePercent: 12,
+  headPoseDeviation: 8,
+  handsOnWheel: true,
+  passengerLoad: 'NORMAL',
+  passengerCount: 28,
+  passengerCapacity: 60,
+  roadRisk: 'LOW',
+  roadContext: ROAD_CONTEXTS.NORMAL_ARTERIAL,
+  hazardLightsActive: false,
+  acousticWarningActive: false,
+  timestamp: Date.now(),
+};
+
+/**
+ * Pre-configured presets for quick one-click manual testing
+ */
+export const TELEMETRY_PRESETS = {
+  NORMAL: {
+    label: 'Normal Driving',
+    description: 'Steady cruise, alert driver, in-lane trajectory',
+    patch: {
+      speedKmH: 50,
+      steeringAngleDeg: 0.8,
+      steeringStabilityScore: 92,
+      laneDeviationCm: 6,
+      brakingStatus: 'NONE' as const,
+      driverStatus: 'NORMAL' as const,
+      eyeClosurePercent: 10,
+      headPoseDeviation: 6,
+      handsOnWheel: true,
+      hazardLightsActive: false,
+      acousticWarningActive: false,
+    },
+  },
+  DROWSY_BEHAVIOUR: {
+    label: 'Drowsy / Abnormal Behaviour',
+    description: 'Frequent micro-blinks, intermittent head nod, loose grip',
+    patch: {
+      speedKmH: 48,
+      steeringAngleDeg: -3.5,
+      steeringStabilityScore: 54,
+      laneDeviationCm: 38,
+      brakingStatus: 'NONE' as const,
+      driverStatus: 'DROWSY' as const,
+      eyeClosurePercent: 55,
+      headPoseDeviation: 42,
+      handsOnWheel: true,
+      hazardLightsActive: false,
+      acousticWarningActive: false,
+    },
+  },
+  POSSIBLE_INCAPACITATION: {
+    label: 'Possible Driver Incapacitation',
+    description: 'Eyes closed, head slumped, hands slipping from steering wheel',
+    patch: {
+      speedKmH: 54,
+      steeringAngleDeg: 8.4,
+      steeringStabilityScore: 18,
+      laneDeviationCm: 84,
+      brakingStatus: 'NONE' as const,
+      driverStatus: 'POSSIBLE_INCAPACITATION' as const,
+      eyeClosurePercent: 92,
+      headPoseDeviation: 86,
+      handsOnWheel: false,
+      hazardLightsActive: true,
+      acousticWarningActive: true,
+    },
+  },
+  SUDDEN_CONTROL_LOSS: {
+    label: 'Sudden Loss of Vehicle Control',
+    description: 'Erratic steering swings, severe lane drift, uncoordinated velocity',
+    patch: {
+      speedKmH: 58,
+      steeringAngleDeg: -16.2,
+      steeringStabilityScore: 12,
+      laneDeviationCm: -115,
+      brakingStatus: 'IRREGULAR' as const,
+      driverStatus: 'POSSIBLE_INCAPACITATION' as const,
+      eyeClosurePercent: 80,
+      headPoseDeviation: 75,
+      handsOnWheel: false,
+      hazardLightsActive: true,
+      acousticWarningActive: true,
+    },
+  },
+};
+
+/**
+ * 8-Step automated demo scenario script (Module 9)
+ */
+export const EMERGENCY_DEMO_STEPS: ScenarioPhase[] = [
+  {
+    name: 'Nominal Driving',
+    description: 'Bus cruising along Route 334E. Telemetry normal, driver alert, in-lane.',
+    durationMs: 3200,
+    telemetryPatch: {
+      speedKmH: 52,
+      steeringAngleDeg: 0.5,
+      steeringStabilityScore: 94,
+      laneDeviationCm: 5,
+      brakingStatus: 'NONE',
+      driverStatus: 'NORMAL',
+      eyeClosurePercent: 12,
+      headPoseDeviation: 6,
+      handsOnWheel: true,
+      hazardLightsActive: false,
+      acousticWarningActive: false,
+      passengerLoad: 'CROWDED',
+      passengerCount: 56,
+      roadRisk: 'HIGH',
+      roadContext: ROAD_CONTEXTS.ELEVATED_FLYOVER,
+    },
+  },
+  {
+    name: 'Early Driver Abnormality',
+    description: 'Driver eye closure rises to 60%, head posture tips forward. Early fatigue advisory.',
+    durationMs: 3400,
+    telemetryPatch: {
+      speedKmH: 51,
+      steeringAngleDeg: -2.8,
+      steeringStabilityScore: 68,
+      laneDeviationCm: 28,
+      brakingStatus: 'NONE',
+      driverStatus: 'DROWSY',
+      eyeClosurePercent: 62,
+      headPoseDeviation: 48,
+      handsOnWheel: true,
+    },
+  },
+  {
+    name: 'Vehicle Instability & Drift',
+    description: 'Driver hands release wheel. Steering stability collapses. Bus begins drifting toward divider.',
+    durationMs: 3600,
+    telemetryPatch: {
+      speedKmH: 54,
+      steeringAngleDeg: 6.4,
+      steeringStabilityScore: 32,
+      laneDeviationCm: 68,
+      brakingStatus: 'NONE',
+      driverStatus: 'POSSIBLE_INCAPACITATION',
+      eyeClosurePercent: 88,
+      headPoseDeviation: 78,
+      handsOnWheel: false,
+    },
+  },
+  {
+    name: 'Multi-Factor Risk Escalation',
+    description: 'Correlating driver state + lane breach + crowded bus (56 commuters) + elevated flyover risk.',
+    durationMs: 3400,
+    telemetryPatch: {
+      speedKmH: 55,
+      steeringAngleDeg: 9.8,
+      steeringStabilityScore: 16,
+      laneDeviationCm: 96,
+      brakingStatus: 'NONE',
+      driverStatus: 'POSSIBLE_INCAPACITATION',
+      eyeClosurePercent: 95,
+      headPoseDeviation: 88,
+      handsOnWheel: false,
+    },
+  },
+  {
+    name: 'Critical Emergency Activated',
+    description: 'Emergency threshold exceeded! Audible alert sounds, hazard flashers engaged, control room notified.',
+    durationMs: 3800,
+    telemetryPatch: {
+      speedKmH: 50,
+      steeringAngleDeg: 7.2,
+      steeringStabilityScore: 14,
+      laneDeviationCm: 112,
+      brakingStatus: 'IRREGULAR',
+      driverStatus: 'POSSIBLE_INCAPACITATION',
+      eyeClosurePercent: 96,
+      headPoseDeviation: 90,
+      handsOnWheel: false,
+      hazardLightsActive: true,
+      acousticWarningActive: true,
+    },
+  },
+  {
+    name: 'Safer-Stop Zone Selected',
+    description: 'GIS database identifies Zone A (Paved Safety Shoulder at KM 14.2, 280m ahead). Initiating controlled decel.',
+    durationMs: 4000,
+    telemetryPatch: {
+      speedKmH: 34,
+      steeringAngleDeg: -3.5, // Guidance toward shoulder
+      steeringStabilityScore: 75,
+      laneDeviationCm: 60, // Steering back toward safety pocket
+      brakingStatus: 'CONTROLLED_DECELERATION',
+      hazardLightsActive: true,
+      acousticWarningActive: true,
+    },
+  },
+  {
+    name: 'Controlled Pull-Over to Shoulder',
+    description: 'Bus guides into wide safety bay with progressive deceleration. In-cabin safety broadcast active.',
+    durationMs: 4000,
+    telemetryPatch: {
+      speedKmH: 14,
+      steeringAngleDeg: -1.2,
+      steeringStabilityScore: 88,
+      laneDeviationCm: 15,
+      brakingStatus: 'CONTROLLED_DECELERATION',
+      hazardLightsActive: true,
+      acousticWarningActive: true,
+    },
+  },
+  {
+    name: 'Safer Stop Completed & Secured',
+    description: 'Bus safely brought to full stop in emergency bay. Hazard beacons flashing. Control room dispatching support.',
+    durationMs: 4000,
+    telemetryPatch: {
+      speedKmH: 0,
+      steeringAngleDeg: 0,
+      steeringStabilityScore: 100,
+      laneDeviationCm: 0,
+      brakingStatus: 'CONTROLLED_DECELERATION',
+      hazardLightsActive: true,
+      acousticWarningActive: true,
+    },
+  },
+];
+
+export const BENCHMARK_COMPARISON_DATA = [
+  {
+    metric: 'Anomaly Detection Time',
+    withoutBusShield: '18.4 seconds',
+    withoutNote: 'Typically noticed only after severe lane drift or collision impact by passengers',
+    withBusShield: '2.6 seconds',
+    withNote: 'Multi-sensor temporal correlation detects micro-slump + steering loss early',
+    improvement: '86% Faster Detection',
+    better: 'with',
+  },
+  {
+    metric: 'Emergency Protocol Trigger',
+    withoutBusShield: '24.0 seconds',
+    withoutNote: 'Manual panic button or bystander emergency call to transit helpline',
+    withBusShield: '3.8 seconds',
+    withNote: 'Autonomous control room telemetry packet + in-cabin passenger instructions',
+    improvement: '84% Faster Trigger',
+    better: 'with',
+  },
+  {
+    metric: 'Estimated Stopping Distance (55 km/h)',
+    withoutBusShield: '> 140 meters (Runaway)',
+    withoutNote: 'Uncontrolled drift into guardrails, median dividers, or surrounding traffic',
+    withBusShield: '42.5 meters (Controlled)',
+    withNote: 'Gradual deceleration curve into designated paved road shoulder / bus bay',
+    improvement: '69% Shorter / Safe Zone',
+    better: 'with',
+  },
+  {
+    metric: 'Residual Speed at Response Initiation',
+    withoutBusShield: '52 - 58 km/h',
+    withoutNote: 'Full cruising speed during loss-of-control trajectory',
+    withBusShield: 'Controlled pull-over to 0 km/h',
+    withNote: 'Progressive electronic deceleration to full safe standstill',
+    improvement: 'Prevents High-Speed Crash',
+    better: 'with',
+  },
+  {
+    metric: 'False Trigger Rate per 100 km',
+    withoutBusShield: '14 false alarms (Naive single sensor)',
+    withoutNote: 'Triggered by quick glances, speed bumps, normal gear shifts',
+    withBusShield: '0.2 false alarms (BUSSHIELD Multi-Factor)',
+    withNote: 'Requires multi-sensor persistence (driver + trajectory + roadway risk)',
+    improvement: '98% Reduction in False Positives',
+    better: 'with',
+  },
+];

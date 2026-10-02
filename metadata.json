@@ -1,0 +1,6 @@
+{
+  "name": "BUSSHIELD AI",
+  "description": "Context-aware emergency decision system for public buses. Detects simulated driver incapacitation and vehicle instability to trigger safer-stop emergency protocols.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
